@@ -35,8 +35,13 @@ public class Main {
 			ps = System.out;			// default to Stdout
 		}
 		initialize();
-		
+
+		ArrayList<String> inputArr = parse(kb);
+		String startWord = inputArr.get(0);
+		String endWord = inputArr.get(1);
 		// TODO methods to read in words, output ladder
+		
+		printLadder(getWordLadderBFS(startWord, endWord));
 	}
 	
 	public static void initialize() {
@@ -51,8 +56,20 @@ public class Main {
 	 * If command is /quit, return empty ArrayList. 
 	 */
 	public static ArrayList<String> parse(Scanner keyboard) {
-		// TO DO
-		return null;
+		String str1 = new String();
+		String str2 = new String();
+		ArrayList<String> array = new ArrayList<String>();
+//		if (keyboard.hasNext()){
+//			str1 = keyboard.next();
+//		}
+//		if (str1.equals("/quit"))
+//			return array;
+//		if (keyboard.hasNext()){
+//			str2 = keyboard.next();
+//		}
+		array.add("smart");
+		array.add("money");
+		return array;
 	}
 	
 	public static ArrayList<String> getWordLadderDFS(String start, String end) {
@@ -67,12 +84,51 @@ public class Main {
 	}
 	
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
-		
-		// TODO some code
 		Set<String> dict = makeDictionary();
-		// TODO more code
+		Map<String, String> backDict = new HashMap<String, String>();
+		ArrayList<String> ladder = new ArrayList<String>();
+		Queue<String> bfsQueue = new LinkedList<String>();
+		start = start.toUpperCase();
+		end = end.toUpperCase();
+		if (!dict.contains(start) || !dict.contains(end))
+			return ladder;		
+		if (start.equals(end)){
+			ladder.add(start);
+			return ladder;
+		}
 		
-		return null; // replace this line later with real return
+		bfsQueue.add(start);
+		dict.remove(start);
+		while (!bfsQueue.isEmpty()) {
+			String w = bfsQueue.poll();
+			for (int i = 0; i < w.length(); i++) {
+				char [] wChar = w.toCharArray().clone();
+				for (char c = 'A'; c <= 'Z'; c++){
+					if (wChar[i] == c)
+						continue;
+					wChar[i] = c;
+					String wNew = String.valueOf(wChar);
+					if (wNew.equals(end)) {
+						String wBack = new String();
+						ladder.add(0, w);
+						while(backDict.containsKey(w)) {
+							wBack = backDict.get(w);
+							ladder.add(0, wBack);
+							w = wBack;
+						}
+						ladder.add(ladder.size(),end);
+						return ladder;
+					}
+					if (dict.contains(wNew)) {
+						bfsQueue.add(wNew);
+						backDict.put(wNew, w);
+						dict.remove(wNew);
+					}
+				}
+			}
+		}
+
+		return ladder; // replace this line later with real return
 	}
     
 	public static Set<String>  makeDictionary () {
@@ -92,6 +148,30 @@ public class Main {
 	}
 	
 	public static void printLadder(ArrayList<String> ladder) {
+		if (ladder == null || ladder.size() == 0)
+			return;
+		int length = ladder.get(0).length();
+		System.out.println("A " + (ladder.size()-2) + "-rung word ladder exists"
+				+ " between " + ladder.get(0).toLowerCase() + " and "
+				+ ladder.get(ladder.size()-1).toLowerCase() + ".");
+		System.out.println(ladder.get(0).toLowerCase());
+		
+//		// To print lower case words
+//		for (String s : ladder){
+//			System.out.println(s);
+//		}
+		
+		// Highlight the changes
+		for (int i = 1; i < ladder.size(); i++) {
+			int label = 0;
+			for (int j = 0; j < length; j++) {
+				if (ladder.get(i).charAt(j) != ladder.get(i-1).charAt(j))
+					label = j;
+			}			
+			StringBuilder w = new StringBuilder(ladder.get(i).toLowerCase());
+			w.setCharAt(label, Character.toUpperCase(w.charAt(label)));
+			System.out.println(w);
+		}	
 		
 	}
 	// TODO
