@@ -39,9 +39,28 @@ public class Main {
 		ArrayList<String> inputArr = parse(kb);
 		String startWord = inputArr.get(0);
 		String endWord = inputArr.get(1);
-		// TODO methods to read in words, output ladder
+
+		ArrayList<String> result = getWordLadderBFS(startWord, endWord);
+
+		if (result == null || result.size() == 0) {
+			System.out.println("no word ladder can be found between <" 
+					+ startWord + "> and <"	+ endWord + ">.");
+			return;					
+		}
+		else {
+			printLadder(result);
+		}
 		
-		printLadder(getWordLadderBFS(startWord, endWord));
+		result = getWordLadderDFS(startWord, endWord);
+
+		if (result == null || result.size() == 0) {
+			System.out.println("no word ladder can be found between <" 
+					+ startWord + "> and <"	+ endWord + ">.");
+			return;					
+		}
+		else {
+			printLadder(result);
+		}
 	}
 	
 	public static void initialize() {
@@ -59,28 +78,82 @@ public class Main {
 		String str1 = new String();
 		String str2 = new String();
 		ArrayList<String> array = new ArrayList<String>();
-//		if (keyboard.hasNext()){
-//			str1 = keyboard.next();
-//		}
-//		if (str1.equals("/quit"))
-//			return array;
-//		if (keyboard.hasNext()){
-//			str2 = keyboard.next();
-//		}
-		array.add("smart");
-		array.add("money");
+		if (keyboard.hasNext()){
+			str1 = keyboard.next();
+		}
+		if (str1.equals("/quit"))
+			return array;
+		if (keyboard.hasNext()){
+			str2 = keyboard.next();
+		}
+		array.add(str1);
+		array.add(str2);
 		return array;
 	}
 	
+	/**
+	 * DFS implementation of word ladder
+	 * @param start word
+	 * @param end word
+	 * @return word ladder found between start and end
+	 */
 	public static ArrayList<String> getWordLadderDFS(String start, String end) {
-		
-		// Returned list should be ordered start to end.  Include start and end.
-		// Return empty list if no ladder.
-		// TODO some code
 		Set<String> dict = makeDictionary();
-		// TODO more code
-		
-		return null; // replace this line later with real return
+		Map<String, Boolean> visitedDict = new HashMap<String, Boolean>();
+		start = start.toUpperCase();
+		end = end.toUpperCase();
+		ArrayList<String> ladder = dfs(start, end, dict, visitedDict, 0, 100);
+//		if (ladder.size()==0) {
+//			visitedDict = new HashMap<String, Boolean>();			
+//			ladder = dfs(start,end,dict,visitedDict,0,Integer.MAX_VALUE);
+//		}
+		return ladder;
+	}
+	
+	/**
+	 * private recursive method for DFS
+	 * @param start word
+	 * @param end word
+	 * @param dict word dictionary
+	 * @param visitedDict visited word map
+	 * @param cnt recursion depth
+	 * @return word ladder found
+	 */
+	private static ArrayList<String> dfs(String start, String end, 
+			Set<String> dict, Map<String, Boolean> visitedDict, int cnt, int maxdepth) {
+		ArrayList<String> ladder = new ArrayList<String>();
+		if (!dict.contains(start) || !dict.contains(end)){
+			return ladder;			
+		}
+		if (start.equals(end)){
+			ladder.add(0, start);
+			return ladder;
+		}
+		// Depth Constraint to prevent stack overflow
+		if (cnt > maxdepth){
+			return ladder;
+		}
+		// true: visited, false: discovered, !exist: undiscovered
+		visitedDict.put(start, false);
+		String w = start;
+		for (int i = 0; i < w.length(); i++) {
+			char [] wChar = w.toCharArray().clone();
+			for (char c = 'A'; c <= 'Z'; c++){
+				if (wChar[i] == c)
+					continue;
+				wChar[i] = c;
+				String wNew = String.valueOf(wChar);
+				if (dict.contains(wNew) && !visitedDict.containsKey(wNew)) {
+					ladder = dfs(wNew, end, dict, visitedDict, 1+cnt, maxdepth);
+					ladder.add(0, w);
+					if (ladder.contains(end))
+						return ladder;
+				}
+			}
+		}
+		visitedDict.remove(start);
+		visitedDict.put(start, true);		
+		return ladder;
 	}
 	
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
@@ -91,10 +164,10 @@ public class Main {
 		start = start.toUpperCase();
 		end = end.toUpperCase();
 		if (!dict.contains(start) || !dict.contains(end))
-			return ladder;		
+			return null;		
 		if (start.equals(end)){
 			ladder.add(start);
-			return ladder;
+			return null;
 		}
 		
 		bfsQueue.add(start);
@@ -128,7 +201,7 @@ public class Main {
 			}
 		}
 
-		return ladder; // replace this line later with real return
+		return null; // replace this line later with real return
 	}
     
 	public static Set<String>  makeDictionary () {
@@ -147,9 +220,11 @@ public class Main {
 		return words;
 	}
 	
+	/**
+	 * Print the word ladder with prompt
+	 * @param ladder
+	 */
 	public static void printLadder(ArrayList<String> ladder) {
-		if (ladder == null || ladder.size() == 0)
-			return;
 		int length = ladder.get(0).length();
 		System.out.println("A " + (ladder.size()-2) + "-rung word ladder exists"
 				+ " between " + ladder.get(0).toLowerCase() + " and "
@@ -163,11 +238,14 @@ public class Main {
 		
 		// Highlight the changes
 		for (int i = 1; i < ladder.size(); i++) {
-			int label = 0;
+			int label = -1;
 			for (int j = 0; j < length; j++) {
 				if (ladder.get(i).charAt(j) != ladder.get(i-1).charAt(j))
 					label = j;
-			}			
+			}		
+			if (label < 0 || label == length)
+				System.err.println("Illegal argument");
+			
 			StringBuilder w = new StringBuilder(ladder.get(i).toLowerCase());
 			w.setCharAt(label, Character.toUpperCase(w.charAt(label)));
 			System.out.println(w);
