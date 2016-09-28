@@ -1,14 +1,13 @@
 /* WORD LADDER Main.java
  * EE422C Project 3 submission by
- * Replace <...> with your actual data.
- * <Student1 Name>
- * <Student1 EID>
- * <Student1 5-digit Unique No.>
+ * Yilin Zhu
+ * yz22778
+ * 16450
  * <Student2 Name>
  * <Student2 EID>
  * <Student2 5-digit Unique No.>
  * Slip days used: <0>
- * Git URL:
+ * Git URL: https://github.com/Marcus-Zhu/EE422C_HW3_WordLadder
  * Fall 2016
  */
 
@@ -47,9 +46,8 @@ public class Main {
 					+ startWord + "> and <"	+ endWord + ">.");
 			return;					
 		}
-		else {
+		else 
 			printLadder(result);
-		}
 		
 		result = getWordLadderDFS(startWord, endWord);
 
@@ -58,9 +56,8 @@ public class Main {
 					+ startWord + "> and <"	+ endWord + ">.");
 			return;					
 		}
-		else {
+		else 
 			printLadder(result);
-		}
 	}
 	
 	public static void initialize() {
@@ -98,16 +95,59 @@ public class Main {
 	 * @return word ladder found between start and end
 	 */
 	public static ArrayList<String> getWordLadderDFS(String start, String end) {
-		Set<String> dict = makeDictionary();
-		Map<String, Boolean> visitedDict = new HashMap<String, Boolean>();
+//		Set<String> dict = makeDictionary();
+//		Map<String, Boolean> visitedDict = new HashMap<String, Boolean>();
+		Map<String, ArrayList<String>> dictTree = new HashMap<String, ArrayList<String>>();
 		start = start.toUpperCase();
 		end = end.toUpperCase();
-		ArrayList<String> ladder = dfs(start, end, dict, visitedDict, 0, 100);
-//		if (ladder.size()==0) {
-//			visitedDict = new HashMap<String, Boolean>();			
-//			ladder = dfs(start,end,dict,visitedDict,0,Integer.MAX_VALUE);
-//		}
+		dictTree = generateMST(start);
+		if (dictTree == null){
+			return null;
+		}
+		
+		ArrayList<String> ladder = dfs(start, end, dictTree, 0);
 		return ladder;
+	}
+	
+	/**
+	 * Generate the Minimal Supporting Tree from start word for the dictionary using BFS
+	 * @param start
+	 * @return mst
+	 */
+	private static Map<String, ArrayList<String>> generateMST(String start){
+		Map<String, ArrayList<String>> tree = new HashMap<String, ArrayList<String>>();
+		Set<String> dict = makeDictionary();
+		Queue<String> bfsQueue = new LinkedList<String>();
+		start = start.toUpperCase();
+		if (!dict.contains(start)){
+			return null;			
+		}		
+		bfsQueue.add(start);
+		dict.remove(start);
+		while (!bfsQueue.isEmpty()) {
+			String w = bfsQueue.poll();
+			for (int i = 0; i < w.length(); i++) {
+				char [] wChar = w.toCharArray().clone();
+				for (char c = 'A'; c <= 'Z'; c++){
+					if (wChar[i] == c)
+						continue;
+					wChar[i] = c;
+					String wNew = String.valueOf(wChar);
+					if (dict.contains(wNew)) {
+						bfsQueue.add(wNew);
+						if (tree.containsKey(w))
+							tree.get(w).add(wNew);
+						else {
+							ArrayList<String> a = new ArrayList<String>();
+							a.add(wNew);
+							tree.put(w, a);
+						}
+						dict.remove(wNew);
+					}
+				}
+			}
+		}
+		return tree;
 	}
 	
 	/**
@@ -120,39 +160,30 @@ public class Main {
 	 * @return word ladder found
 	 */
 	private static ArrayList<String> dfs(String start, String end, 
-			Set<String> dict, Map<String, Boolean> visitedDict, int cnt, int maxdepth) {
+			Map<String, ArrayList<String>> dictTree, int cnt) {
 		ArrayList<String> ladder = new ArrayList<String>();
-		if (!dict.contains(start) || !dict.contains(end)){
-			return ladder;			
-		}
+
 		if (start.equals(end)){
-			ladder.add(0, start);
+			ladder.add(start);
+			ladder.add(end);
 			return ladder;
 		}
-		// Depth Constraint to prevent stack overflow
-		if (cnt > maxdepth){
-			return ladder;
-		}
-		// true: visited, false: discovered, !exist: undiscovered
-		visitedDict.put(start, false);
+		
 		String w = start;
-		for (int i = 0; i < w.length(); i++) {
-			char [] wChar = w.toCharArray().clone();
-			for (char c = 'A'; c <= 'Z'; c++){
-				if (wChar[i] == c)
-					continue;
-				wChar[i] = c;
-				String wNew = String.valueOf(wChar);
-				if (dict.contains(wNew) && !visitedDict.containsKey(wNew)) {
-					ladder = dfs(wNew, end, dict, visitedDict, 1+cnt, maxdepth);
+		if (dictTree.containsKey(w)){
+			for (String wNew : dictTree.get(w)) {
+				if (wNew.equals(end)) {
+					ladder.add(wNew);
+					ladder.add(w);
+					return ladder;
+				}
+				ladder = dfs(wNew, end, dictTree, 1+cnt);
+				if (ladder.size() != 0){
 					ladder.add(0, w);
-					if (ladder.contains(end))
-						return ladder;
+					return ladder;
 				}
 			}
 		}
-		visitedDict.remove(start);
-		visitedDict.put(start, true);		
 		return ladder;
 	}
 	
@@ -167,7 +198,8 @@ public class Main {
 			return null;		
 		if (start.equals(end)){
 			ladder.add(start);
-			return null;
+			ladder.add(end);
+			return ladder;
 		}
 		
 		bfsQueue.add(start);
@@ -229,29 +261,38 @@ public class Main {
 		System.out.println("A " + (ladder.size()-2) + "-rung word ladder exists"
 				+ " between " + ladder.get(0).toLowerCase() + " and "
 				+ ladder.get(ladder.size()-1).toLowerCase() + ".");
-		System.out.println(ladder.get(0).toLowerCase());
 		
 //		// To print lower case words
+//		System.out.println(ladder.get(0).toLowerCase());
 //		for (String s : ladder){
 //			System.out.println(s);
 //		}
-		
+//		
 		// Highlight the changes
+		if (ladder.size() == 2){		
+			if (!ladder.get(0).equals(ladder.get(1))){
+				System.err.println("Illegal argument");
+				return;
+			}		
+			System.out.println(ladder.get(0));
+			System.out.println(ladder.get(1));
+			return;			
+		}
+		System.out.println(ladder.get(0).toLowerCase());
 		for (int i = 1; i < ladder.size(); i++) {
 			int label = -1;
 			for (int j = 0; j < length; j++) {
 				if (ladder.get(i).charAt(j) != ladder.get(i-1).charAt(j))
 					label = j;
 			}		
-			if (label < 0 || label == length)
+			if (label < 0 || label == length){
 				System.err.println("Illegal argument");
-			
+				return;
+			}			
 			StringBuilder w = new StringBuilder(ladder.get(i).toLowerCase());
 			w.setCharAt(label, Character.toUpperCase(w.charAt(label)));
 			System.out.println(w);
-		}	
+		}
 		
 	}
-	// TODO
-	// Other private static methods here
 }
