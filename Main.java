@@ -39,17 +39,7 @@ public class Main {
 		String startWord = inputArr.get(0);
 		String endWord = inputArr.get(1);
 
-		ArrayList<String> result = getWordLadderBFS(startWord, endWord);
-
-		if (result == null || result.size() == 0) {
-			System.out.println("no word ladder can be found between <" 
-					+ startWord + "> and <"	+ endWord + ">.");
-			return;					
-		}
-		else 
-			printLadder(result);
-		
-		result = getWordLadderDFS(startWord, endWord);
+		ArrayList<String> result = getWordLadderDFS(startWord, endWord);
 
 		if (result == null || result.size() == 0) {
 			System.out.println("no word ladder can be found between <" 
@@ -79,7 +69,7 @@ public class Main {
 			str1 = keyboard.next();
 		}
 		if (str1.equals("/quit"))
-			return array;
+			System.exit(-1);
 		if (keyboard.hasNext()){
 			str2 = keyboard.next();
 		}
@@ -262,37 +252,36 @@ public class Main {
 				+ " between " + ladder.get(0).toLowerCase() + " and "
 				+ ladder.get(ladder.size()-1).toLowerCase() + ".");
 		
-//		// To print lower case words
-//		System.out.println(ladder.get(0).toLowerCase());
-//		for (String s : ladder){
-//			System.out.println(s);
+		// To print lower case words
+		for (String s : ladder){
+			System.out.println(s.toLowerCase());
+		}
+		
+//		// Highlight the changes
+//		if (ladder.size() == 2){		
+//			if (!ladder.get(0).equals(ladder.get(1))){
+//				System.err.println("Illegal argument");
+//				return;
+//			}		
+//			System.out.println(ladder.get(0));
+//			System.out.println(ladder.get(1));
+//			return;			
 //		}
-//		
-		// Highlight the changes
-		if (ladder.size() == 2){		
-			if (!ladder.get(0).equals(ladder.get(1))){
-				System.err.println("Illegal argument");
-				return;
-			}		
-			System.out.println(ladder.get(0));
-			System.out.println(ladder.get(1));
-			return;			
-		}
-		System.out.println(ladder.get(0).toLowerCase());
-		for (int i = 1; i < ladder.size(); i++) {
-			int label = -1;
-			for (int j = 0; j < length; j++) {
-				if (ladder.get(i).charAt(j) != ladder.get(i-1).charAt(j))
-					label = j;
-			}		
-			if (label < 0 || label == length){
-				System.err.println("Illegal argument");
-				return;
-			}			
-			StringBuilder w = new StringBuilder(ladder.get(i).toLowerCase());
-			w.setCharAt(label, Character.toUpperCase(w.charAt(label)));
-			System.out.println(w);
-		}
+//		System.out.println(ladder.get(0).toLowerCase());
+//		for (int i = 1; i < ladder.size(); i++) {
+//			int label = -1;
+//			for (int j = 0; j < length; j++) {
+//				if (ladder.get(i).charAt(j) != ladder.get(i-1).charAt(j))
+//					label = j;
+//			}		
+//			if (label < 0 || label == length){
+//				System.err.println("Illegal argument");
+//				return;
+//			}			
+//			StringBuilder w = new StringBuilder(ladder.get(i).toLowerCase());
+//			w.setCharAt(label, Character.toUpperCase(w.charAt(label)));
+//			System.out.println(w);
+//		}
 		
 	}
 }
