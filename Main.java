@@ -92,7 +92,7 @@ public class Main {
 		end = end.toUpperCase();
 		dictTree = generateMST(start);
 		if (dictTree == null){
-			return null;
+			return new ArrayList<String>();
 		}
 		
 		ArrayList<String> ladder = dfs(start, end, dictTree, 0);
@@ -163,8 +163,8 @@ public class Main {
 		if (dictTree.containsKey(w)){
 			for (String wNew : dictTree.get(w)) {
 				if (wNew.equals(end)) {
-					ladder.add(wNew);
 					ladder.add(w);
+					ladder.add(wNew);
 					return ladder;
 				}
 				ladder = dfs(wNew, end, dictTree, 1+cnt);
@@ -185,7 +185,7 @@ public class Main {
 		start = start.toUpperCase();
 		end = end.toUpperCase();
 		if (!dict.contains(start) || !dict.contains(end))
-			return null;		
+			return ladder;		
 		if (start.equals(end)){
 			ladder.add(start);
 			ladder.add(end);
